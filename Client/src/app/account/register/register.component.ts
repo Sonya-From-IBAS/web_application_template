@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AccountService } from '../account.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SharedService } from '../../shared/shared.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -12,7 +14,11 @@ export class RegisterComponent implements OnInit{
   submitted = false;
   errorMessages: string[] = [];
 
-  constructor(private accountService: AccountService, private formBuilder: FormBuilder){}
+  constructor(
+    private accountService: AccountService, 
+    private formBuilder: FormBuilder, 
+    private sharedService: SharedService,
+    private router: Router){}
   
   ngOnInit(): void {
     this.initForm();
@@ -33,11 +39,16 @@ export class RegisterComponent implements OnInit{
 
     if(this.registerForm.valid) {
       this.accountService.register(this.registerForm.value).subscribe({
-        next: res => {
-          console.log(res);
+        next: (res: any) => {
+          this.sharedService.showNotification(true, 'Register Notification', res.value.text);
+          this.router.navigateByUrl('/account/login');
         },
-        error: res => {
-          console.log(res);
+        error: (res: any) => {
+          if(res.error.errors){
+            this.errorMessages = res.error.errors;
+          } else {
+            this.errorMessages.push(res.error);
+          }
         }
       });
     }

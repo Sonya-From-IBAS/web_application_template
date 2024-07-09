@@ -47,7 +47,7 @@ namespace MyServer.Controllers
                 return BadRequest(message);
             }
 
-            return Ok(new { text = "Ваш аккаунт был зарегестрирован!"} );
+            return Ok(new JsonResult(new { text = "Ваш аккаунт успешно зарегестрирован!"}) );
         }
 
     }

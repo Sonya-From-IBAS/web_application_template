@@ -1,1 +1,5 @@
-<p>validation-messages works!</p>
+<div class="text-center mt-3" *ngIf="errorMessages">
+    <h6 style="display: block; " class="text-danger" *ngFor="let err of errorMessages">
+        <b>{{err}}</b>
+    </h6>
+</div>
