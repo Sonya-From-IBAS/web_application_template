@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyServer.DTOs.Account;
-using MyServer.Models;
 using MyServer.Services;
 using System.Security.Claims;
 
@@ -9,7 +8,7 @@ namespace MyServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : BaseCustomContoller
     {
         private readonly IUserAuthenticationService _userAuthenticationService;
 
@@ -34,12 +33,12 @@ namespace MyServer.Controllers
             {
                 return Unauthorized(message);
             }
-
-            return await _userAuthenticationService.CreateApplicationUserDtoAsync(model.UserName);
+            var result = await _userAuthenticationService.CreateApplicationUserDtoAsync(model.UserName);
+            return JsonOk(result);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto model) 
+        public async Task<IActionResult> Register(RegisterDto model)
         {
             var message = await _userAuthenticationService.IsUserRegisteredAsync(model.Email, model.FirstName, model.LastName, model.Password);
             if (!String.IsNullOrEmpty(message))
@@ -47,7 +46,7 @@ namespace MyServer.Controllers
                 return BadRequest(message);
             }
 
-            return Ok(new JsonResult(new { text = "Ваш аккаунт успешно зарегестрирован!"}) );
+            return JsonOk("Ваш аккаунт успешно зарегестрирован!");
         }
 
     }
