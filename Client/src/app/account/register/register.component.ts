@@ -41,15 +41,13 @@ export class RegisterComponent implements OnInit{
       this.accountService.register(this.registerForm.value).subscribe({
         next: (res: any) => {
           console.log(res);
-          this.sharedService.showNotification(true, 'Registration', res.value);
+          this.sharedService.showNotification(true, 'Registration', res.data);
           this.router.navigateByUrl('/account/login');
         },
         error: (res: any) => {
           console.log(res);
-          if(res.error.errors){
-            this.errorMessages = res.error.errors;
-          } else {
-            this.errorMessages.push(res.error);
+          if(res.error){
+            this.errorMessages = res.error;
           }
         }
       });

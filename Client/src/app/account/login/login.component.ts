@@ -39,14 +39,13 @@ export class LoginComponent implements OnInit{
       this.accountService.login(this.loginForm.value).subscribe({
         next: (res: any) => {
           console.log(res);
-          this.sharedService.showNotification(true, 'authorization', res.value);
-          this.router.navigateByUrl('/account/login');
+          // this.sharedService.showNotification(true, 'authorization', res.value);
+          // this.router.navigateByUrl('/account/login');
         },
         error: (res: any) => {
-          if(res.error.errors){
-            this.errorMessages = res.error.errors;
-          } else {
-            this.errorMessages.push(res.error);
+          console.log(res);
+          if(res.error){
+            this.errorMessages = res.error;
           }
         }
       });

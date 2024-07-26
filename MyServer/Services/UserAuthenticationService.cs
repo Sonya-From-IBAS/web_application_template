@@ -18,25 +18,26 @@ namespace MyServer.Services
             _jwtService = jwtService;
         }
 
-        public async Task<string?> IsUserUnauthorizedAsync(string userName, string password)
+        public async Task<string[]> IsUserUnauthorizedAsync(string userName, string password)
         {
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                return "Неверное имя пользователя или пароль!";
+                return ["Неверное имя пользователя или пароль!"];
             }
 
             if (user.EmailConfirmed == false)
             {
-                return "Пожалуйста, подтвердите свой email!";
+                return ["Пожалуйста, подтвердите свой email!"];
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
 
             if (!result.Succeeded)
             {
-                return "Неверное имя пользователя или пароль!";
+                return ["Неверное имя пользователя или пароль!"];
             }
+            
 
             return null;
         }
@@ -63,11 +64,11 @@ namespace MyServer.Services
             };
         }
 
-        public async Task<string> IsUserRegisteredAsync(string email, string firstName, string lastName, string password)
+        public async Task<string[]> IsUserRegisteredAsync(string email, string firstName, string lastName, string password)
         {
             if(await _userManager.Users.AnyAsync(x => x.Email == email))
             {
-                return "Пользователь с таким email уже существует!";
+                return ["Пользователь с таким email уже существует!"];
             }
             var user = new User
             {
@@ -80,7 +81,14 @@ namespace MyServer.Services
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded) 
             {
-                return $"Ошибка регистарации пользователя: {result.Errors}";
+                var errors = result.Errors.ToList();
+                var resultMessage = new string[errors.Count];
+                for(int i = 0; i < errors.Count; i++)
+                {
+                    resultMessage[i] = errors[i].Description;
+                }
+
+                return resultMessage;
             }
             return null;
         }

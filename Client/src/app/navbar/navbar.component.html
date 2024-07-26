@@ -10,7 +10,8 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item" style="cursor: pointer;">
-                        <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                        <a class="nav-link" routerLink="/" routerLinkActive="active"
+                            [routerLinkActiveOptions]="{exact: true}">
                             Home
                         </a>
                     </li>
@@ -20,7 +21,8 @@
                         </a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+
+                <ul class="navbar-nav" *ngIf="(accountService.user$ | async) === null">
                     <li class="nav-item">
                         <a class="btn btn-primary mx-2" routerLink="/account/register" routerLinkActive="active">
                             Create account
@@ -32,6 +34,20 @@
                         </a>
                     </li>
                 </ul>
+
+                <ul class="navbar-nav" *ngIf="(accountService.user$ | async) as user">
+                    <li class="nav-item mx-3">
+                        <span class="h3 text-danger">
+                            {{user.firstName | titlecase}}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary" (click)="logout()">
+                            LogOut
+                        </a>
+                    </li>
+                </ul>
+
             </div>
         </div>
     </nav>

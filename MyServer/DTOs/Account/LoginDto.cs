@@ -4,9 +4,9 @@ namespace MyServer.DTOs.Account
 {
     public class LoginDto
     {
-        [Required]
+        [Required(ErrorMessage = "User name is required")]
         public string UserName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Password name is required")]
         public string Password { get; set; }
     }
 }

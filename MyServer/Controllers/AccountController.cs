@@ -27,11 +27,11 @@ namespace MyServer.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto model)
         {
-            var message = await _userAuthenticationService.IsUserUnauthorizedAsync(model.UserName, model.Password);
+            string[] messages = await _userAuthenticationService.IsUserUnauthorizedAsync(model.UserName, model.Password);
 
-            if (!String.IsNullOrEmpty(message))  
+            if (messages != null)  
             {
-                return Unauthorized(message);
+                return Unauthorized(messages);
             }
             var result = await _userAuthenticationService.CreateApplicationUserDtoAsync(model.UserName);
             return JsonOk(result);
@@ -40,10 +40,10 @@ namespace MyServer.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            var message = await _userAuthenticationService.IsUserRegisteredAsync(model.Email, model.FirstName, model.LastName, model.Password);
-            if (!String.IsNullOrEmpty(message))
+            string[] messages = await _userAuthenticationService.IsUserRegisteredAsync(model.Email, model.FirstName, model.LastName, model.Password);
+            if (messages != null)
             {
-                return BadRequest(message);
+                return BadRequest(messages);
             }
 
             return JsonOk("Ваш аккаунт успешно зарегестрирован!");
