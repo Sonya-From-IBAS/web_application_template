@@ -10,6 +10,6 @@ export class NavbarComponent {
   constructor(public accountService: AccountService){}
   
   logout(){
-
+      this.accountService.logout();
   }
 }

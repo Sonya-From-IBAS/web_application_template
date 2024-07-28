@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AccountService } from '../account.service';
 import { SharedService } from '../../shared/shared.service';
+import { take } from 'rxjs';
+import { User } from '../../shared/models/user';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +20,18 @@ export class LoginComponent implements OnInit{
     private accountService: AccountService, 
     private formBuilder: FormBuilder, 
     private router: Router,
-    private sharedService: SharedService){}
+    private sharedService: SharedService){
+      //если уже зарегистрировавшись перейти по /account/login
+      this.accountService.user$.pipe(
+        take(1)
+      ).subscribe({
+        next: (user: User | null) => {
+          if(user) {
+            this.router.navigateByUrl("/");
+          }
+        }
+      })
+    }
 
     ngOnInit(): void {
       this.initForm();
@@ -39,6 +52,7 @@ export class LoginComponent implements OnInit{
       this.accountService.login(this.loginForm.value).subscribe({
         next: (res: any) => {
           console.log(res);
+          this.router.navigateByUrl("/");
           // this.sharedService.showNotification(true, 'authorization', res.value);
           // this.router.navigateByUrl('/account/login');
         },
