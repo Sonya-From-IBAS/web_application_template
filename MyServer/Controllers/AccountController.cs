@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyServer.DTOs.Account;
+using MyServer.Models;
 using MyServer.Services;
 using System.Security.Claims;
 
@@ -10,6 +11,7 @@ namespace MyServer.Controllers
     [ApiController]
     public class AccountController : BaseCustomContoller
     {
+        //private readonly IEmailService _emailService;
         private readonly IUserAuthenticationService _userAuthenticationService;
 
         public AccountController(IUserAuthenticationService userAuthenticationService)
@@ -29,7 +31,7 @@ namespace MyServer.Controllers
         {
             string[] messages = await _userAuthenticationService.IsUserUnauthorizedAsync(model.UserName, model.Password);
 
-            if (messages != null)  
+            if (messages != null)
             {
                 return Unauthorized(messages);
             }
@@ -48,6 +50,38 @@ namespace MyServer.Controllers
 
             return JsonOk("Ваш аккаунт успешно зарегестрирован!");
         }
+
+
+        //[HttpGet("send-email")]
+        //public async Task<IActionResult> SendMailAsync(MailData mailData)
+        //{
+        //    bool result = await _emailService.SendEmailAsync(mailData);
+        //    return result
+        //        ? JsonOk("Mail has successfully been sent")
+        //        : JsonError("An error occured. The mail could not be sent");
+            /*
+             Test json object:
+
+                {
+                  "to": [
+                    "LeonidPakhomov2003g@yandex.ru"
+                  ],
+                  "bcc": [
+                    "Anevskyi2018@yandex.ru"
+                  ],
+                  "cc": [
+                    "Anevskyi2018@yandex.ru"
+                  ],
+                  "from": "Anevskyi2018@yandex.ru",
+                  "displayName": "Ht",
+                  "replyTo": "",
+                  "replyToName": "string",
+                  "subject": "Attempt to authorize with email",
+                  "body": "Test message, here will be a link to authorize!"
+                }
+
+            */
+        //}
 
     }
 }

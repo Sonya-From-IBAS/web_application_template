@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using MyServer.DTOs.Account;
 using MyServer.Models;
+using System.Text;
 
 namespace MyServer.Services
 {
@@ -10,12 +12,21 @@ namespace MyServer.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly JWTService _jwtService;
+        private readonly EmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public UserAuthenticationService(SignInManager<User> signInManager, UserManager<User> userManager, JWTService jwtService)
+        public UserAuthenticationService(
+            UserManager<User> userManager, 
+            SignInManager<User> signInManager, 
+            JWTService jwtService,
+            IConfiguration configuration, 
+            EmailService emailService)
         {
-            _signInManager = signInManager;
             _userManager = userManager;
+            _signInManager = signInManager;
             _jwtService = jwtService;
+            _configuration = configuration;
+            _emailService = emailService;
         }
 
         public async Task<string[]> IsUserUnauthorizedAsync(string userName, string password)
@@ -75,8 +86,7 @@ namespace MyServer.Services
                 FirstName = firstName.ToLower(),
                 LastName = lastName.ToLower(),
                 UserName = email,
-                Email = email,
-                EmailConfirmed = true
+                Email = email
             };
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded) 
@@ -90,12 +100,36 @@ namespace MyServer.Services
 
                 return resultMessage;
             }
-            return null;
+            try
+            {
+                if(await SendConfirmEmailAsync(user))
+                {
+                    return null;
+                }
+                return ["Failed to send email!"];
+            }
+            catch (Exception)
+            {
+                return ["Failed to send email!"];
+            }
         }
 
         public async Task<UserDto> RefreshUserTokenAsync(string userName)
         {
             return await CreateApplicationUserDtoAsync(userName);
+        }
+
+        private async Task<bool> SendConfirmEmailAsync(User user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var url = $"{_configuration["JWT:ClientUrl"]}/{_configuration["Email:ConfirmEmailPath"]}?token={token}&email={user.Email}";
+            var body = $"<p>Hello: {user.FirstName} {user.LastName}</p>" +
+                "<p>Please, confirm your email address by clicking on the following link</p>" +
+                $"<p><a href=\"{url}\">Click here</a></p>" + 
+                "<br>Leon Application";
+            var mailData = new MailData([user.Email], "Confirm your email", body);
+            return await _emailService.SendEmailAsync(mailData);
         }
     }
 }
