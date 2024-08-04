@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
     if(jwt) {
       console.log('jwt refresh')
       this.accountService.refreshJWT(jwt).subscribe({
-        next: _ => {},
+        next: _ => {console.log('я получил jwt')},
         error: _ => {
           this.accountService.logout();
         }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AccountService } from '../account.service';
 import { SharedService } from '../../shared/shared.service';
 import { take } from 'rxjs';
@@ -14,13 +14,15 @@ import { User } from '../../shared/models/user';
 export class LoginComponent implements OnInit{
   loginForm: FormGroup = new FormGroup({});
   submitted: boolean = false;
-  errorMessages: string[] = []; 
+  errorMessages: string[] = [];
+  returnUrl: string | null = null;
 
   constructor(
     private accountService: AccountService, 
     private formBuilder: FormBuilder, 
     private router: Router,
-    private sharedService: SharedService){
+    private sharedService: SharedService,
+    private activatedRoute: ActivatedRoute){
       //если уже зарегистрировавшись перейти по /account/login
       this.accountService.user$.pipe(
         take(1)
@@ -28,6 +30,16 @@ export class LoginComponent implements OnInit{
         next: (user: User | null) => {
           if(user) {
             this.router.navigateByUrl("/");
+          } else {
+            this.activatedRoute.queryParams.subscribe({
+              next: (params: Params) => {
+                console.log(params)
+                if(params) {
+                  this.returnUrl = params['returnUrl'];
+                }
+                console.log(this.returnUrl);
+              }
+            })
           }
         }
       })
@@ -52,7 +64,11 @@ export class LoginComponent implements OnInit{
       this.accountService.login(this.loginForm.value).subscribe({
         next: (res: any) => {
           console.log(res);
-          this.router.navigateByUrl("/");
+          if(this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.router.navigateByUrl("/");
+          }
           // this.sharedService.showNotification(true, 'authorization', res.value);
           // this.router.navigateByUrl('/account/login');
         },
