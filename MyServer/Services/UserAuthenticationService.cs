@@ -53,16 +53,6 @@ namespace MyServer.Services
             return null;
         }
 
-        //public UserDto CreateApplicationUserDto(User user)
-        //{
-        //    return new UserDto
-        //    {
-        //        FirstName = user.FirstName,
-        //        LastName = user.LastName,
-        //        JWT = _jwtService.CreateJWT(user)
-        //    };
-        //}
-
         public async Task<UserDto> CreateApplicationUserDtoAsync(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName);
@@ -75,7 +65,7 @@ namespace MyServer.Services
             };
         }
 
-        public async Task<string[]> IsUserRegisteredAsync(string email, string firstName, string lastName, string password)
+        public async Task<string[]> RegisterUserAsync(string email, string firstName, string lastName, string password)
         {
             if(await _userManager.Users.AnyAsync(x => x.Email == email))
             {
@@ -130,6 +120,28 @@ namespace MyServer.Services
                 "<br>Leon Application";
             var mailData = new MailData([user.Email], "Confirm your email", body);
             return await _emailService.SendEmailAsync(mailData);
+        }
+
+        public async Task<string> ConfirmEmailAsync(ConfirmEmailDto userData)
+        {
+            var user = await _userManager.FindByEmailAsync(userData.Email);
+            if (user == null) return "Email address has not been registered!";
+            if (user.EmailConfirmed == true) return "Your email alredy has been confirmed!";
+            try
+            {
+                string token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(userData.Token));
+                //Помимо подтверждения проходит проверка токена
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if(result.Succeeded)
+                {
+                    return null;
+                }
+                return "Invalid token. Please, try again!";
+            }
+            catch (Exception)
+            {
+                return "Invalid token. Please, try again!";
+            }
         }
     }
 }

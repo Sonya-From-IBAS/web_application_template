@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyServer.DTOs.Account;
-using MyServer.Models;
 using MyServer.Services;
 using System.Security.Claims;
 
@@ -42,7 +41,7 @@ namespace MyServer.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            string[] messages = await _userAuthenticationService.IsUserRegisteredAsync(model.Email, model.FirstName, model.LastName, model.Password);
+            string[] messages = await _userAuthenticationService.RegisterUserAsync(model.Email, model.FirstName, model.LastName, model.Password);
             if (messages != null)
             {
                 return BadRequest(messages);
@@ -51,37 +50,15 @@ namespace MyServer.Controllers
             return JsonOk("Ваш аккаунт успешно зарегестрирован!");
         }
 
-
-        //[HttpGet("send-email")]
-        //public async Task<IActionResult> SendMailAsync(MailData mailData)
-        //{
-        //    bool result = await _emailService.SendEmailAsync(mailData);
-        //    return result
-        //        ? JsonOk("Mail has successfully been sent")
-        //        : JsonError("An error occured. The mail could not be sent");
-            /*
-             Test json object:
-
-                {
-                  "to": [
-                    "LeonidPakhomov2003g@yandex.ru"
-                  ],
-                  "bcc": [
-                    "Anevskyi2018@yandex.ru"
-                  ],
-                  "cc": [
-                    "Anevskyi2018@yandex.ru"
-                  ],
-                  "from": "Anevskyi2018@yandex.ru",
-                  "displayName": "Ht",
-                  "replyTo": "",
-                  "replyToName": "string",
-                  "subject": "Attempt to authorize with email",
-                  "body": "Test message, here will be a link to authorize!"
-                }
-
-            */
-        //}
-
+        [HttpPatch("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto dto)
+        {
+            string message = await _userAuthenticationService.ConfirmEmailAsync(dto);
+            if (String.IsNullOrEmpty(message))
+            {
+                return JsonError(message);
+            }
+            return JsonOk("Email успешно подтвержден!");
+        }
     }
 }
