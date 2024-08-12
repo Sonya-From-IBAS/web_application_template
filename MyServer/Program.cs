@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<Context>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration["SQLServer:ConnectionString"]);
 });
 
 //builder.Services.AddScoped<IJWTService, JWTService>();
