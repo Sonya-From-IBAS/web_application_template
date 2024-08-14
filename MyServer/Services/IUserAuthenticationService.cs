@@ -42,5 +42,12 @@ namespace MyServer.Services
         /// <param name="userData"></param>
         /// <returns></returns>
         public Task<string> ConfirmEmailAsync(ConfirmEmailDto userData);
+
+        /// <summary>
+        /// Повторная отправка письма для подтверждения почты
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public Task<string> ResendEmailConfirmationLinkAsync(string email);
     }
 }

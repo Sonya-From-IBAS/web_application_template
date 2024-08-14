@@ -47,18 +47,37 @@ namespace MyServer.Controllers
                 return BadRequest(messages);
             }
 
-            return JsonOk("Ваш аккаунт успешно зарегестрирован!");
+            return JsonOk("Ваш аккаунт успешно зарегестрирован! Пожалуйста, подтвердите ваш Email!");
         }
 
-        [HttpPatch("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto dto)
+        [HttpPut("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailDto dto)
         {
+            //var dto = new ConfirmEmailDto { Email = email, Token = token };
             string message = await _userAuthenticationService.ConfirmEmailAsync(dto);
-            if (String.IsNullOrEmpty(message))
+            if (!String.IsNullOrEmpty(message))
             {
-                return JsonError(message);
+                return BadRequest(message);
             }
             return JsonOk("Email успешно подтвержден!");
+        }
+
+        [HttpPost("resend-email-confirmation-link/{email}")]
+        public async Task<IActionResult> ResendEmailConfirmationLink(string email)
+        {
+            string message = await _userAuthenticationService.ResendEmailConfirmationLinkAsync(email);
+            if (!String.IsNullOrEmpty(message))
+            {
+                return BadRequest(message);
+            }
+            return JsonOk("Сообщение отправлено повторно. Пожалуйста, подтвердите ваш Email!");
+            
+        }
+
+        [HttpGet("try-it-out")]
+        public string TryItOut()
+        {
+            return "trt it out!";
         }
     }
 }

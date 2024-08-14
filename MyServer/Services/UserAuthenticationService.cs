@@ -113,7 +113,8 @@ namespace MyServer.Services
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            var url = $"{_configuration["JWT:ClientUrl"]}/{_configuration["Email:ConfirmEmailPath"]}?token={token}&email={user.Email}";
+
+            var url = $"{_configuration["JWT:Issuer"]}/api/{_configuration["Email:ConfirmEmailPath"]}?Token={token}&Email={user.Email}";
             var body = $"<p>Hello: {user.FirstName} {user.LastName}</p>" +
                 "<p>Please, confirm your email address by clicking on the following link</p>" +
                 $"<p><a href=\"{url}\">Click here</a></p>" + 
@@ -141,6 +142,31 @@ namespace MyServer.Services
             catch (Exception)
             {
                 return "Invalid token. Please, try again!";
+            }
+        }
+
+        public async Task<string> ResendEmailConfirmationLinkAsync(string email)
+        {
+            if (String.IsNullOrEmpty(email)) 
+                return "Invalid email";
+
+            User user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return "This email has not been registered yet!";
+
+            if (user.EmailConfirmed == true)
+                return "Your email address already has been confirmed. You can login to your account";
+
+            try
+            {
+                if (await SendConfirmEmailAsync(user))
+                    return null;
+                return "Failed to send email";
+            }
+            catch (Exception ex)
+            {
+                return $"Failed to send email: {ex.GetBaseException().Message}";
             }
         }
     }
