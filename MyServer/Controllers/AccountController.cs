@@ -50,10 +50,9 @@ namespace MyServer.Controllers
             return JsonOk("Ваш аккаунт успешно зарегестрирован! Пожалуйста, подтвердите ваш Email!");
         }
 
-        [HttpPut("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailDto dto)
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto dto)
         {
-            //var dto = new ConfirmEmailDto { Email = email, Token = token };
             string message = await _userAuthenticationService.ConfirmEmailAsync(dto);
             if (!String.IsNullOrEmpty(message))
             {
@@ -74,10 +73,27 @@ namespace MyServer.Controllers
             
         }
 
-        [HttpGet("try-it-out")]
-        public string TryItOut()
+        [HttpGet("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
         {
-            return "trt it out!";
+            string message = await _userAuthenticationService.ResetPassword(dto);
+            if (!String.IsNullOrEmpty(message))
+            {
+                return BadRequest(message);
+            }
+            return JsonOk("Email успешно подтвержден!");
+        }
+
+        [HttpPost("forgot-username-or-password/{email}")]
+        public async Task<IActionResult> ForgotUsernameOrPassord([FromRoute]string email)
+        {
+            var message = await _userAuthenticationService.ForgotUsernameOrPassord(email);
+
+            if (!String.IsNullOrEmpty(message)) 
+            {
+                return BadRequest(message);
+            }
+            return JsonOk("Сообщение отправлено, проверьте почту!");
         }
     }
 }

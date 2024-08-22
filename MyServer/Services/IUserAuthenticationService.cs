@@ -49,5 +49,19 @@ namespace MyServer.Services
         /// <param name="email"></param>
         /// <returns></returns>
         public Task<string> ResendEmailConfirmationLinkAsync(string email);
+
+        /// <summary>
+        /// Отправить письмо для восстановления аккаунта
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public Task<string> ForgotUsernameOrPassord(string email);
+
+        /// <summary>
+        /// Сбросить пароль
+        /// </summary>
+        /// <param name="resetPassword"></param>
+        /// <returns></returns>
+        public Task<string> ResetPassword(ResetPasswordDto resetPassword);
     }
 }

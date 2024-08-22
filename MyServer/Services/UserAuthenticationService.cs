@@ -114,13 +114,34 @@ namespace MyServer.Services
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            var url = $"{_configuration["JWT:Issuer"]}/api/{_configuration["Email:ConfirmEmailPath"]}?Token={token}&Email={user.Email}";
+            var url = GenerateUrlLinkForEmail("Email:ConfirmEmailPath", token, user.Email);
             var body = $"<p>Hello: {user.FirstName} {user.LastName}</p>" +
                 "<p>Please, confirm your email address by clicking on the following link</p>" +
                 $"<p><a href=\"{url}\">Click here</a></p>" + 
                 "<br>Leon Application";
             var mailData = new MailData([user.Email], "Confirm your email", body);
             return await _emailService.SendEmailAsync(mailData);
+        }
+
+        private async Task<bool> SendForgotUsernameOrPasswordEmail(User user)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            
+            var url = GenerateUrlLinkForEmail("Email:ResetPasswordPath", token, user.Email);
+
+            var body = $"<p>Hello: {user.FirstName} {user.LastName}</p>" +
+                $"<p>Username: {user.UserName}</p>" +
+                $"<p>To reset your password, please click on the linkL</p>" +
+                $"<p><a href=\"{url}\">Click here</a></p>" +
+                "<br>Leon Application";
+            var mailData = new MailData([user.Email], "Reset your password", body);
+            return await _emailService.SendEmailAsync(mailData);
+        }
+
+        private string GenerateUrlLinkForEmail(string action, string token, string email)
+        {
+            return $"{_configuration["JWT:Issuer"]}/api/{_configuration[action]}?Token={token}&Email={email}";
         }
 
         public async Task<string> ConfirmEmailAsync(ConfirmEmailDto userData)
@@ -169,5 +190,60 @@ namespace MyServer.Services
                 return $"Failed to send email: {ex.GetBaseException().Message}";
             }
         }
+
+        public async Task<string> ForgotUsernameOrPassord(string email)
+        {
+            if (String.IsNullOrEmpty(email))
+            {
+                return "Invalid Email!";
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return "This email address has not been registered";
+            }
+
+            try
+            {
+                if (await SendForgotUsernameOrPasswordEmail(user))
+                {
+                    return null;
+                }
+
+                return "Failed to send message on email!";
+            }
+            catch (Exception ex)
+            {
+                return "Failed to send message on email!";
+            }
+        }
+
+        public async Task<string> ResetPassword(ResetPasswordDto resetPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(resetPassword.Email);
+            if (user == null)
+                return "This email has not been registered yet!";
+
+            if (user.EmailConfirmed == true)
+                return "Your email address already has been confirmed. You can login to your account";
+
+            try
+            {
+                string token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPassword.Token));
+                //Помимо подтверждения проходит проверка токена
+                var result = await _userManager.ResetPasswordAsync(user, token, resetPassword.NewPassord);
+                if (result.Succeeded)
+                {
+                    return null;
+                }
+                return "Invalid token. Please, try again!";
+            }
+            catch (Exception)
+            {
+                return "Invalid token. Please, try again!";
+            }
+        }
+
     }
 }
